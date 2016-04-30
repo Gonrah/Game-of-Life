@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="bg">
+	<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+	<meta http-equiv="Content-Language" content="bg">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta charset="UTF-8">
+	<title> Game of Life </title>
+	<meta name="description" content="Реализация на Game of Life на Джон Конъуей" />
+	<meta name="keywords" content="Game of Life, John Conaway, Hristo Gatsinski, Technical University, Sofia">
+	<meta name="author" content="Христо Гацински">
+	<meta name="owner" content="Христо Гацински" /> 
+	<meta name="rating" content="general" /> 
+	<meta name="distribution" content="global" /> 
+	<meta name="audience" content="all" />
+	<meta name="reply-to" content="gatsinski@gmail.com" />
+	<!-- CSS стилове -->
+	<style>
+		td {width: 20px; height: 20px; background: black; border: 1px white}
+		.alive {background: green;}
+		
+		body {background: #CCC;}
+		div.menu
+		{
+			width: 550px;
+			margin: 2px;
+			padding: 5px;
+			background: #4E5F65;
+			-webkit-border-radius:3px;
+			-moz-border-radius:3px;
+			border-radius:3px;
+			-webkit-box-shadow: 3px 3px 0 #ccc, 0 -1px #fff inset;
+			-moz-box-shadow: 3px 3px 0 #ccc, 0 -1px #fff inset;
+			box-shadow: 3px 3px 0 #ccc, 0 -1px #fff inset;
+		}
+		div.menu-row
+		{
+			margin-top: 4px;
+		}
+		input[type='button']
+		{			
+			background: #9A9EAB;
+			border: 1px solid #7295B2;
+			color: #062330;
+			font-size: 14px;
+			font-family: Arial;
+			padding: 3px;
+			box-shadow: 0px 1px 3px #000;
+			-webkit-border-radius:3px;
+			-moz-border-radius:3px;
+			border-radius:3px;			
+		}
+		input[type='button']:hover
+		{ background: #ffff99; }
+		span#white { color: #FFF; font-style: italic;}
+		input#save_field { width: 100px; }
+	</style>
+	</head>
+	<body>
+		<div class='menu'>
+		<input type='button' value='Изпълни една стъпка' id='step'>
+		<input type='button' value='Пусни ►' id='start'>
+		<input type='button' value='Спри ▌▌' id='stop'>
+		<input type='button' value='Ускори ▲' id='speedup'>
+		<input type='button' value='Забави ▼' id='speeddown'>
+		<input type='button' value='Снимай' id='shot'>
+		<div class='menu-row'>
+		<input type='button' value='Запиши' id='save'>
+		<input type='button' value='Зареди' id='load'>
+		<input type='text' id='save_field'>
+		<span id='white'>
+			Период: <div id='speed' style="display: inline-block; width: 40px;">0;</div>
+			Стъпки: <span id='steps'>0</span>; 
+		</span> 
+		<span id='white'>  Христо Гацински</span> 
+		</div></div>
+		
+		
+		<table>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+			<tr>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+			</tr>
+		</table>
+		<!-- Този елемент съдържа рамката, в която се генерира изображението при заснемане -->
+		<canvas id="myCanvas" style="display:none">Използвания браузър не поддържа рамки</canvas>
+
+		<script type="text/javascript">
+		/*	Заложените във функционалните бутони действия ще са достъпни
+			едва след окончателното зареждане на документа.		*/
+		$( document ).ready(function() {
+			var delay=1000;
+			var running = 0;
+			//Бутон за изпълнение на една стъпка
+			$( "#step" ).click(function()
+			{
+				//Създавам празен масив, който да съхрани полето
+				var resultArray = [];
+				//Извиквам функцията за попълване на масива
+				generateArray(resultArray);
+				//Извиквам функцията за изпълнение на една стъпка
+				cycleOfLife(resultArray, resultArray.length);
+			});
+			
+			//Бутон за стартиране на симулацията
+			$( "#start" ).click(function() 	
+				{ 	
+					//Ако вече не е стартирана симулацията.
+					if(running==0)
+					{
+						//Извиквам функцията за изпълнение на симулацията
+						runTheGame(delay);
+						running=1;
+						//Извежда скороста на екрана
+						$( "#speed" ).text(delay);
+					}
+				});
+			
+			//Бутон за паузиране/спиране на симулацията
+			$( "#stop" ).click(function() 	
+				{	
+					//Прекратява цикличното изпълнение
+					clearTimeout(myVar);
+					running=0;
+					//Периода се възстановява на 1 секунда
+					delay=1000; 
+					//Извежда съобщение, че играта е спряна
+					$( "#speed" ).text(0);
+				});
+				
+			//Бутон за ускоряване на симулацията
+			$( "#speedup" ).click(function() 	
+				{	
+					//Прекратява цикличното изпълнение
+					clearTimeout(myVar);
+					//Намалява периода не изпълнение с 0.1 секунди
+					delay-=100;
+					//Ако новия период и положителен, извежда го на екрана.
+					if(delay>0)	{ $( "#speed" ).text(delay); }
+					//В противен случай, изпизва минимума - 0.05 секунди.
+					else {delay=50; $( "#speed" ).text(delay); }
+					running=0;
+				});
+				
+			//Бутон за забавяне на симулацията
+			$( "#speeddown" ).click(function() 	
+				{	
+					//Прекратява цикличното изпълнение
+					clearTimeout(myVar);
+					//Увеличава периода на изпълнение с 0.1 секунди.
+					delay+=100;
+					//Извежда новата стойност на екрана.
+					$( "#speed" ).text(delay);
+					running=0;
+				});
+			
+			//Бутон за записване на текущото състояние.
+			$( "#save" ).click(function() 	
+				{	
+					//Създавам празен масив, който да съхрани полето
+					var resultArray = [];
+					//Извиквам функцията за попълване на масива
+					generateArray(resultArray);
+					//Извеждам на екрана текстовото преобразувание на масива
+					$('#save_field').val(JSON.stringify(resultArray));
+				});	
+				
+			$("#load").click(function() 	
+				{	
+					//Създавам празен масив, който съхранява полето
+					var resultArray = [];
+					//Записвам в него въведените от потребителя данни
+					resultArray = $.parseJSON($('#save_field').val());
+					//Извеждам в конзолата подадения масив (за тестови цели)
+					console.log(resultArray);
+					//Извиквам функцията, която генерира графичното поле
+					generateTable(resultArray);
+				});	
+				
+			$( "#shot" ).click(function()
+				{
+					//Създавам празен масив, който да съхрани полето
+					var resultArray = [];
+					//Извиквам функцията за попълване на масива
+					generateArray(resultArray);
+					var i, k; //Броячи
+					/* 	xstep представлява стъпката (разстоянието) по хоризонтала,
+					през което да генерирам цветен квадрат, а ystep е за вертикала */
+					var xstep = 0, ystep=0;
+					//Избирам рамката
+					var canvas = document.getElementById("myCanvas");
+					var ctx = canvas.getContext("2d");
+					/* 	Задавам размер на рамката, съотвестващ на броя елементи, които ще се въвеждат в него.
+						Размера на всеки блок е 20 пиксела, а разстоянието между тях - 1. За това умножавам по 21. 
+						Широчината на рамката зависи от броя елементи по хоризонтала (броя колони).
+						Понеже матрицата е квадратна е достатъчно да намеря дължината на първия ред.
+						Височината на рамката зависи от броя елементи по вертикала (броя редове).		*/
+					canvas.width = resultArray[0].length*21;
+					canvas.height = resultArray.length*21;
+					
+					/*	Обхождам по височина
+						При всяко изпълнение на цикъла увеличавам стъпката по вертикала с 21, за да може
+						следващия генериран цветен блок да бъда на подходящ отстъп от предходния.	*/
+					for(i=0; i<resultArray.length; i++, ystep+=21)
+					{ 
+						/*	Обхождам по широчина
+							При всяко изпълнение на цикъла увеличавам стъпката по хоризонтала с 21, за да може
+							следващия генериран цветен блок да бъда на подходящ отстъп от предходния.	*/
+						for(k=0; k<resultArray[i].length; k++, xstep+=21)
+						{
+							//Извеждам настоящата стъпка в конзолата (за тестови цели)
+							console.log(ystep);
+							//Ако съответната клетка е 1-ца (жива), избирам зелен цвят
+							if(resultArray[i][k]==1)
+								{ctx.fillStyle = "#00FF00";}
+							//В противен случай избирам червен цвят
+							else {ctx.fillStyle = "#FF0000";}
+							//Генерирам цветен блок с размер 20х20 пиксела, с определения отстъп и цвят
+							ctx.fillRect(xstep,ystep,20,20);
+						}
+						//Нулирам стъпката по хоризонтала, след като целия ред е обходен и минавам на нов
+						xstep=0;
+					}
+					//Зареждам полученото изображение в нов прозорец
+					window.open(canvas.toDataURL("image/png"));
+				});
+		
+			/*	Променя състоянието на клетката.
+				При клик върху нея, ако е била жива - умира. И обратно.	*/
+			$( document ).on( 'click', 'td', function() {
+				$( this ).toggleClass( "alive" );
+			});
+				
+		}); //Края на условието за заредена страница
+		
+		//Съхранява цикъла, за да бъде достъпен и контролиран
+		var myVar;
+		var steps=0;
+		//Функция за стартиране на цикличното изпълнение
+		function runTheGame(delay)
+		{
+			//Създавам празен масив, който да съхрани полето
+			var resultArray = [];
+			//Извиквам функцията за попълване на масива
+			generateArray(resultArray);
+			//Извиквам функцията за изпълнение на една стъпка
+			cycleOfLife(resultArray, resultArray.length);
+			//Извиквам рекурсивно функцията след определено закъснение.
+			myVar = setTimeout(function(){	runTheGame(delay)  }, delay);
+		}
+		
+		//Функция за генериране на таблицата по зададен масив
+		function generateTable(tableData) 
+		{
+			//Изпразва предходната таблица
+			$('table').remove();
+			//Избира тага.
+			var table = document.createElement('table');
+
+			//Обхождам всеки ред на масива
+			tableData.forEach(function(rowData) 
+			{
+				//Създавам нов ред
+				var row = document.createElement('tr');
+				//За всеки ред, обхождам по широчина (колоните)
+				rowData.forEach(function(cellData) 
+				{
+					//Създавам клетка
+					var cell = document.createElement("td");
+					//Ако стойността на елемента е 1-ца, правя клетката жива
+					if (cellData==1)	{	 cell.className = 'alive';  }
+					//Скрития в коментар ред може да попълни и числата в таблицата (за тестови цели)
+					//cell.appendChild(document.createTextNode(cellData));
+					
+					//Добавя клетката в реда
+					row.appendChild(cell);
+				});
+
+				//Добавя получения ред в таблицата
+				table.appendChild(row);
+			});
+
+			//Добавя новата таблица към тялото на документа
+			document.body.appendChild(table);
+		}
+		
+		//Функция за попълване на масива по таблицата
+		function generateArray(resultArray) 
+		{	
+			//Обхожда всеки ред от таблицата
+			$("tr").each(function () 
+			{
+				//Променлива за временно съхранение на вътрешния масив (клетките в реда)
+				var innerArray = [];
+				//Обхожда редът в дълбочина (колоните)
+				$(this).find('td').each(function () 
+				{
+					//Ако е с клас alive записвам 1-ца в масива
+					if($(this).hasClass( "alive" )) { innerArray.push('1'); }
+					//Ако е без клас, записвам 0 в масива
+					else { innerArray.push('0'); }
+				});
+				//Вмъква получения вътрешен масив в крайния
+				resultArray.push(innerArray);
+			});
+			//Извежда крайния масив в конзолата (за тестови цели)
+			//console.log(resultArray);
+		}
+		
+		//Функция за изпълнение на една стъпка
+		function cycleOfLife(resultArray, y_length)
+		{
+			//Броячи
+			var i, k;
+			//Флагове
+			var xgrow=0, ygrow=0;
+			//Общ брой живи съседи
+			var totalLivingNeighbors; 
+			//Избирам таблицата
+			var table = $("table")[0];			
+			
+			//Обхожда всички редове
+			//y_length е височината на матрицата
+			for (i = 0; i < y_length; i++) 
+			{ 	
+				//Дължината на реда
+				x_length = resultArray[i].length;
+				//Обхожда всеки елемент от ред
+				for (k = 0; k < x_length; k++) 
+				{ 
+					totalLivingNeighbors = 0;
+					//Проверявам горе в ляво
+					if(i==0) //Намирам се на първия ред
+					{
+						if(k==0) //Намирам се в началото на реда
+						{
+							if(resultArray[y_length-1][x_length-1]=='1') //За това проверявам в долния десен край 
+							{totalLivingNeighbors++;}
+						}
+						else
+						{
+							if(resultArray[y_length-1][k-1]=='1') //Проверявам долу в ляво
+							{totalLivingNeighbors++;}
+						}
+					}
+					else
+					{
+						if(k==0) //Намирам се в началото на реда
+						{
+							if(resultArray[i-1][x_length-1]=='1') //За това проверявам в края на горния ред 
+							{totalLivingNeighbors++;}
+						}
+						else
+						{
+							if(resultArray[i-1][k-1]=='1') //Проверявам горе в ляво
+							{totalLivingNeighbors++;}
+						}					
+					}
+					
+					
+					//Проверявам горе в центъра
+					if(i==0) //Намирам се на първия ред
+					{
+						if(resultArray[y_length-1][k]=='1') //За това взимам последния ред
+							{totalLivingNeighbors++;}
+					}
+					else
+					{
+						if(resultArray[i-1][k]=='1') //Горния ред
+							{totalLivingNeighbors++;}				
+					}
+					
+					//Проверявам горе в дясно
+					if(i==0) //Намирам се на първия ред
+					{
+						if(k==x_length-1) //Намирам се в края на реда
+						{
+							if(resultArray[y_length-1][0]=='1') //За това проверявам в долния ляв край 
+							{totalLivingNeighbors++;}
+						}
+						else
+						{
+							if(resultArray[y_length-1][k+1]=='1') //Взимам от последния ред в дясно
+							{totalLivingNeighbors++;}
+						}
+					}
+					else
+					{
+						if(k==x_length-1) //Намирам се в края на реда
+						{
+							if(resultArray[i-1][0]=='1') //За това проверявам в началото на горния ред 
+							{totalLivingNeighbors++;}
+						}
+						else
+						{
+							if(resultArray[i-1][k+1]=='1') //Проверявам горе в дясно
+							{totalLivingNeighbors++;}
+						}					
+					}
+					
+					//Проверявам в дясно
+					if(k==x_length-1) //Намирам се в края на реда
+						{
+							if(resultArray[i][0]=='1') //За това проверявам в началото му
+							{totalLivingNeighbors++;}
+						}
+					else
+						{
+							if(resultArray[i][k+1]=='1') //Просто проверявам следващия в реда
+							{totalLivingNeighbors++;}
+						}
+
+					//Проверявам долу в дясно
+					if(i==y_length-1) //Намирам се на последния ред
+					{
+						if(k==x_length-1) //Намирам се в края на реда
+						{
+							if(resultArray[0][0]=='1') //За това проверявам в горния ляв край
+							{totalLivingNeighbors++;}
+						}
+						else //На последния ред съм, но не в края му
+						{
+							if(resultArray[0][k+1]=='1') //За това проверявам в началото в дясно
+							{totalLivingNeighbors++;}
+						}
+					}
+					else
+					{
+						if(k==x_length-1) //Намирам се в края на реда
+						{
+							if(resultArray[i+1][0]=='1') //За това проверявам в началото на долния ред
+							{totalLivingNeighbors++;}
+						}
+						else
+						{
+							if(resultArray[i+1][k+1]=='1') //Проверявам долу в дясно
+							{totalLivingNeighbors++;}
+						}					
+					}
+					
+					//Проверявам долу в ляво
+					if(i==y_length-1) //Намирам се на последния ред
+					{
+						if(k==0) //Намирам се в началото на реда
+						{
+							if(resultArray[0][x_length-1]=='1') //За това проверявам в горния десен край
+							{totalLivingNeighbors++;}
+						}
+						else //На последния ред съм, но не в началото му
+						{
+							if(resultArray[0][k-1]=='1') //За това проверявам на първия ред в ляво
+							{totalLivingNeighbors++;}
+						}
+					}
+					else
+					{
+						if(k==0) //Намирам се в края на реда
+						{
+							if(resultArray[i+1][x_length-1]=='1') //За това проверявам в края на долния ред
+							{totalLivingNeighbors++;}
+						}
+						else
+						{
+							if(resultArray[i+1][k-1]=='1') //Проверявам на долния ред в ляво
+							{totalLivingNeighbors++;}
+						}					
+					}					
+					
+					//Проверявам долу в центъра
+					if(i==y_length-1) //Намирам се на последния ред
+					{
+						if(resultArray[0][k]=='1') //За това проверявам на първия ред, същата позиция
+							{totalLivingNeighbors++;}
+					}
+					else
+					{
+						if(resultArray[i+1][k]=='1') //За това проверявам на долния ред, същата позиция
+							{totalLivingNeighbors++;}				
+					}
+
+
+					//Проверявам в ляво
+					if(k==0) //Намирам се в началото на реда
+						{
+							if(resultArray[i][x_length-1]=='1') //За това проверявам в края му
+							{totalLivingNeighbors++;}
+						}
+					else
+						{
+							if(resultArray[i][k-1]=='1') //Просто проверявам предходния в реда
+							{totalLivingNeighbors++;}
+						}
+					
+					var cell = table.rows[i].cells[k]; 
+					var $cell = $(cell);
+					//Проверявам дали клетката има повече от 3 живи съседа или по-малко от 2
+					if(totalLivingNeighbors>3 || totalLivingNeighbors<2)
+					{
+						//Ако клетката е жива, трябва да умре
+						if($cell.hasClass("alive"))	{ $cell.removeClass("alive"); }
+					}
+					//Проверявам дали клетката има точно 3 живи съседа.
+					else if(totalLivingNeighbors==3)
+					{
+						//Ако клетката е мъртва, трябва да се съживи.
+						if(!$cell.hasClass("alive")) { $cell.attr('class', 'alive');	}
+					}
+					
+				}
+			}
+			//След приключването на цикъла, обновява брояча
+			steps++;
+			$( "#steps" ).text(steps);
+		}
+		</script>		
+	</body>
+</html>
